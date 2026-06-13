@@ -1,4 +1,6 @@
 <template>
-  <div id="app"><router-view /></div>
+  <div id="app"><AppNavbar /><main><router-view /></main></div>
 </template>
-<script setup></script>
+<script setup>
+import AppNavbar from './components/AppNavbar.vue';
+</script>
