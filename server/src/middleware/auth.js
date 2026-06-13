@@ -17,4 +17,16 @@ function authRequired(req, res, next) {
   }
 }
 
-module.exports = { authRequired };
+function authOptional(req, res, next) {
+  const header = req.headers.authorization;
+  if (header && header.startsWith('Bearer ')) {
+    const token = header.split(' ')[1];
+    try {
+      const payload = jwt.verify(token, config.jwtSecret);
+      req.userId = payload.userId;
+    } catch (err) { /* invalid token, continue as guest */ }
+  }
+  next();
+}
+
+module.exports = { authRequired, authOptional };

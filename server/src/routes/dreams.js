@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../db/connection');
-const { authRequired } = require('../middleware/auth');
+const { authRequired, authOptional } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -82,7 +82,7 @@ router.post('/:id/generate', authRequired, async (req, res) => {
 });
 
 // GET /api/v1/dreams/:id — 梦境详情 (T11)
-router.get('/:id', (req, res) => {
+router.get('/:id', authOptional, (req, res) => {
   const dream = db.prepare(`
     SELECT d.*, u.username FROM dreams d JOIN users u ON d.user_id = u.id WHERE d.id = ?
   `).get(req.params.id);

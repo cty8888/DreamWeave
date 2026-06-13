@@ -16,6 +16,15 @@ app.use('/api/v1/tags', tagsRoutes);
 const dreamsRoutes = require('./routes/dreams');
 app.use('/api/v1/dreams', dreamsRoutes);
 
+const continuationsRoutes = require('./routes/continuations');
+app.use('/api/v1/dreams/:id/continuations', continuationsRoutes);
+
+const fragmentsRoutes = require('./routes/fragments');
+app.use('/api/v1/fragments', fragmentsRoutes);
+
+const favoritesRoutes = require('./routes/favorites');
+app.use('/api/v1/favorites', favoritesRoutes);
+
 app.get('/api/v1/health', (req, res) => {
   res.json({ status: 'ok' });
 });
