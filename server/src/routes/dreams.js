@@ -38,4 +38,36 @@ router.post('/', authRequired, (req, res) => {
   res.status(201).json(dream);
 });
 
+router.get('/', (req, res) => {
+  const { visibility, page = 1, limit = 20 } = req.query;
+  const offset = (Number(page) - 1) * Number(limit);
+  let where = 'WHERE 1=1';
+  const params = [];
+
+  if (visibility) {
+    where += ' AND d.visibility = ?';
+    params.push(visibility);
+  }
+
+  const countRow = db.prepare(`SELECT COUNT(*) as total FROM dreams d ${where}`).get(...params);
+  const rows = db.prepare(`
+    SELECT d.*, u.username FROM dreams d JOIN users u ON d.user_id = u.id
+    ${where} ORDER BY d.created_at DESC LIMIT ? OFFSET ?
+  `).all(...params, Number(limit), offset);
+
+  res.json({ data: rows, total: countRow.total, page: Number(page) });
+});
+
+router.get('/:id', authRequired, (req, res) => {
+  const dream = db.prepare(`
+    SELECT d.*, u.username FROM dreams d JOIN users u ON d.user_id = u.id WHERE d.id = ?
+  `).get(req.params.id);
+
+  if (!dream) return res.status(404).json({ error: 'dream not found' });
+  if (dream.visibility === 'private' && dream.user_id !== req.userId) {
+    return res.status(404).json({ error: 'dream not found' });
+  }
+  res.json(dream);
+});
+
 module.exports = router;

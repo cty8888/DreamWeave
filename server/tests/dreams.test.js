@@ -43,3 +43,44 @@ describe('POST /api/v1/dreams', () => {
     expect(res.status).toBe(400);
   });
 });
+
+describe('GET /api/v1/dreams', () => {
+  beforeAll(async () => {
+    for (let i = 0; i < 3; i++) {
+      await request(app).post('/api/v1/dreams')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ title: `public ${i}`, content: `content ${i}`, visibility: 'public' });
+    }
+  });
+
+  it('should return public dreams with pagination', async () => {
+    const res = await request(app).get('/api/v1/dreams?visibility=public&page=1&limit=2');
+    expect(res.status).toBe(200);
+    expect(res.body.data.length).toBeLessThanOrEqual(2);
+    expect(res.body).toHaveProperty('total');
+  });
+});
+
+describe('GET /api/v1/dreams/:id', () => {
+  let privateDreamId;
+  beforeAll(async () => {
+    const res = await request(app).post('/api/v1/dreams')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ title: 'private', content: 'secret', visibility: 'private' });
+    privateDreamId = res.body.id;
+  });
+
+  it('should return dream for owner', async () => {
+    const res = await request(app).get(`/api/v1/dreams/${privateDreamId}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+  });
+
+  it('should return 404 for non-owner of private dream', async () => {
+    const regRes = await request(app).post('/api/v1/auth/register')
+      .send({ username: 'other', email: 'other@t.com', password: '123456' });
+    const res = await request(app).get(`/api/v1/dreams/${privateDreamId}`)
+      .set('Authorization', `Bearer ${regRes.body.token}`);
+    expect(res.status).toBe(404);
+  });
+});
