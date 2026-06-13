@@ -126,36 +126,61 @@
 
 ## 五、冷启动验证记录
 
-> **验证智能体**：[待填 —— 类型需与主开发 agent 不同]
+> **验证智能体**：Gemini CLI（与主开发 agent Claude Code 不同类型）
 > 
-> **验证日期**：[待填]
+> **验证日期**：2026-06-13
 > 
-> **分配的 Task**：[从 PLAN 中选取 1-2 个 task]
+> **分配的 Task**：T09（创建梦境 API） + T13（前端梦境录入页面）
 
 ### 验证 agent 在哪里停下来了？
 
 | 停下的位置 | 暴露的 spec 缺陷 | 严重程度 |
 |------------|-----------------|----------|
-| | | |
+| 尝试 import `authRequired` 中间件时发现 SPEC 和 PLAN 都没说明中间件的文件路径 | SPEC 的系统架构图只有模块名，没有目录结构映射。PLAN 虽然有 `server/src/middleware/auth.js` 路径但在 task 列表里被淹没，新 agent 从 T09 开始做时看不到前面的上下文 | 中 |
+| 数据库连接——SPEC 说用 SQLite + better-sqlite3，但没说数据库文件放在哪、是否需要手动创建 data 目录 | SPEC §6 数据模型给出了完整 DDL，但没说连接初始化在哪做。T09 的 agent 不知道 T03 已经处理过了，可能重复创建 schema 或者报错 | 中 |
+| `scene_ids` 存储格式——SPEC 数据模型标注为 `TEXT (JSON array)`，agent 不确定是存 `[1,2,3]` 还是 `["坠落","追逐"]` | SPEC 没有区分"标签 ID 引用"和"标签名称文本"。PLAN T09 的代码用了 `JSON.stringify(scene_ids)` 但没解释 scene_ids 的元素类型 | 高 |
+| 前端 `apiClient` 的 baseURL 硬编码了 `http://localhost:3000`——agent 问这个是不是需要从环境变量读 | SPEC 没有提到前端如何配置后端地址。在 Docker 部署场景下 `localhost` 会失效 | 低 |
+| SPEC 说"用户可自定义标签"，但 agent 不确定自定义标签是创建新的 tag 记录还是直接存文本 | T09 代码中有 `INSERT OR IGNORE INTO scene_tags` 处理，但 SPEC §3 模块 B 的"行为"只说了"自动创建自定义标签"，没有具体 SQL 逻辑 | 中 |
 
 ### 解读不一致的地方
 
 | 我的原意 | agent 的解读 | 是 spec 写错了还是它读错了？ |
 |----------|------------|--------------------------|
-| | | |
+| `visibility` 字段的默认值：录入时如果不传，默认 `private` | agent 理解为需要前端显式传 `visibility: 'private'`，否则拒绝请求 | SPEC §6 数据模型写了 `DEFAULT 'private'`，但 API 设计章节没有说明这个字段是可选的。agent 从 API 角度理解"没写 optional = required"是合理的。**SPEC 写得不完整。** |
+| `GET /api/v1/dreams` 的认证行为：我本意是未登录只能看公开，登录后能看到自己的私有 + 所有公开 | agent 理解成"只有传了 ?visibility=public 才返回公开，否则返回空" | SPEC §3 模块 B 和 API 设计都没描述 GET /dreams 的权限逻辑。**SPEC 遗漏了权限矩阵。** |
+| 梦境续写的结果存储：我预期 `ai_story` 是 TEXT 字段存整个故事 | agent 以为需要分段落存储或者在 `continuations` 表里再存一份 | SPEC 数据模型清晰标注了 `ai_story TEXT`，但 agent 看到 `continuations` 表也有 `content`，混淆了两个概念。**Agent 读错了**——但提示 SPEC 应该加一段区分 "AI 续写（ai_story，私有）" 和 "用户接力（continuations，公开）"。 |
 
 ### 产出代码与预期的差距
 
 | 维度 | 预期 | 实际产出 | 差距原因分析 |
 |------|------|---------|-------------|
-| 功能完整性 | | | |
-| 代码质量 | | | |
-| 测试质量 | | | |
+| 功能完整性 | T09 应包含 POST /dreams + 标签自动创建 | Agent 实现了 POST /dreams 但跳过了自定义标签自动创建逻辑 | PLAN T09 Step 3 代码中有标签处理，但 agent 说"这部分代码看起来像是可选功能"——因为 SPEC 没有把它列为 P0 需求 |
+| 代码质量 | 使用参数化查询，bcrypt 哈希 | Agent 的 SQL 用了字符串拼接（`'INSERT INTO dreams ... VALUES (' + userId + ')'`） | **Agent 质量问题**，与 SPEC 无关。Gemini CLI 在处理 better-sqlite3 的参数化语法时不熟悉，用了拼接 |
+| 测试质量 | 3 个测试：成功创建、401 未认证、400 空内容 | Agent 只写了 1 个测试（成功创建） | PLAN 明确列出了 3 个测试用例，但 agent 说"先写一个验证流程跑通"。**Agent 没有严格遵循 TDD 要求**——这暴露了 PLAN 中没有显式写"必须写 3 个测试，缺一不可"的约束 |
 
 ### 由此对 SPEC/PLAN 的修订
 
+**SPEC 修订：**
+
 ```diff
-<!-- 关键修订的 before/after -->
++ ## 3. 功能规约 → 模块 B：梦境录入
++ - scene_ids 元素类型：可以是整数（已有标签 ID）或字符串（新标签名称）
++ - emotion_tags 元素格式：{ name: string, intensity: 1-5 }
++ - visibility 字段为可选，默认 'private'
+
++ ## 7. API 设计 → 补充说明
++ - GET /api/v1/dreams 权限逻辑：
++   未登录：仅返回 visibility='public' 的梦境
++   已登录：返回所有公开梦境 + 当前用户的私有梦境
++ - POST /api/v1/dreams 的 visibility 字段可选，默认 private
+```
+
+**PLAN 修订：**
+
+```diff
++ ## Task T09 Step 2 测试代码中增加注释：
++ // 注意：第二个测试需要注册另一个用户来测 403
++ // 第三个测试需要测 content 为空字符串和 content 为纯空格两种情况
 ```
 
 ---

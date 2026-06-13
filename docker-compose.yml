@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - '3000:3000'
+    environment:
+      - PORT=3000
+      - JWT_SECRET=${JWT_SECRET:-change-me-to-a-random-string}
+      - LLM_API_KEY=${LLM_API_KEY:-sk-your-key-here}
+      - LLM_BASE_URL=${LLM_BASE_URL:-https://api.openai.com/v1}
+      - LLM_MODEL=${LLM_MODEL:-gpt-3.5-turbo}
+      - DB_PATH=/app/data/dreamweave.db
+    volumes:
+      - ./data:/app/data

@@ -85,7 +85,67 @@
 
 ---
 
+### 2026-06-13 — T03-T28 批量实现阶段
+
+- **触发的技能**：`subagent-driven-development`（连续派发 12 个 implementer subagent）
+- **Task 编号**：T03, T04, T05, T07, T02, T09, T16, T19, T25, T06, T08, T10-T11, T17, T20, T22, T12, T13, T14, T15, T21, T24, T26, T27, T28, T29-T30
+- **Prompt / Context 要点**：
+  - 每个 task 从 PLAN.md 提取完整代码模板 + 验证命令
+  - Commit 格式：`Co-Authored-By: SubAgent-TXX-implementer`
+  - TDD 强制：红 → 绿 → 提交
+  - 阶段 1 用了 7 个并行 worktree（backend-core / frontend-core / dreams / ai-llm / continuations / fragments / favorites-share）
+  - 阶段 2 因 worktree 合并冲突过多，回退到 master 直接开发
+- **Subagent 输出摘要**：
+  - 总计 14 个独立 subagent，26 个 commit
+  - 后端 27 个测试全部通过
+  - 前端 vite build 成功（385ms，11 route chunks）
+- **人工干预**：
+  - worktree 合并：因 `dreams.js` 和 `index.js` 多分支冲突，改为手动拷贝独有文件 + 手工整合 index.js
+  - 中间件补充：新增 `authOptional` 中间件解决 `GET /dreams/:id` 的公开/私有权限问题（原 SPEC 未明确描述）
+  - PL:AN.md 持续更新：每完成一个 task 勾掉并填入 commit hash
+- **教训 & 可复用模板**：
+  - 并行 worktree 数量不宜超过 3-4 个，否则合并成本超过开发收益
+  - "完整代码模板"是最有效的 subagent prompt 模式
+  - 集中注册文件（index.js）是并行开发的瓶颈——应考虑自注册模式
+  - vitest 4.x + CommonJS 有兼容问题，subagent 自己找到了绕过方案
+
+### 2026-06-13 — 冷启动验证（模拟）
+
+- **触发的技能**：n/a（手动模拟）
+- **Task 编号**：T09 + T13
+- **验证 Agent**：模拟 Gemini CLI（不同类型 agent）
+- **发现的关键问题**：
+  - SPEC 缺少权限矩阵（GET /dreams 的认证逻辑）
+  - scene_ids 元素类型不明确（ID vs 名称）
+  - visibility 字段可选性未在 API 文档标注
+  - 数据库连接初始化、标签存储格式不够清晰
+- **SPEC 修订**：补充了 API 权限说明、字段可选性标注、数据结构澄清
+- **PLAN 修订**：在测试注释中增加了边界条件说明
+- **教训**：冷启动验证在实现前做比实现后补有价值得多——发现的 3 个问题如果提前修掉，至少能避免 2 个实现阶段的 bug
+
+### 2026-06-13 — 收尾阶段
+
+- **触发的技能**：n/a（手工整理）
+- **Task 编号**：T29-T30
+- **完成内容**：
+  - Dockerfile：多阶段构建（client-build + server-run），前端静态文件由 Express 托管
+  - docker-compose.yml：单服务 + 环境变量 + 数据卷
+  - CI：后端测试 → 前端构建 → Docker 镜像构建
+  - README.md：完整填写（安装/运行/Docker/API/目录结构）
+  - REFLECTION.md：~2200 字反思报告
+  - SPEC_PROCESS.md 冷启动验证章节填写
+- **人工干预**：README、REFLECTION 等文档由人类（学生）撰写/润色
+
+---
+
 ## 踩坑记录
+
+| 日期 | 问题 | 原因 | 解决方案 | 关键词 |
+|------|------|------|----------|--------|
+| 2026-06-13 | worktree 合并冲突：7 个并行 worktree 全部修改了 `dreams.js` 和 `index.js` | 每个 worktree 独立创建了这些文件的不同版本 | 放弃逐个 merge，改为从各 worktree 拷贝独有文件到 master + 手工整合冲突文件 | git-worktree, merge-conflict |
+| 2026-06-13 | vitest 4.x 不支持 `require('vitest')` 在 CJS 中 | vitest 4+ ESM-only | subagent 用手动 exports 覆盖代替 `vi.mock` | vitest, esm, mocking |
+| 2026-06-13 | `GET /dreams/:id` 私有梦境对所有者返回 404 | 路由未加认证中间件，`req.userId` 为 undefined | 新增 `authOptional` 中间件：有 token 就解析 userId，没有就当游客 | auth, middleware |
+| 2026-06-13 | fragments 路由依赖 `uuid` 包未安装 | T22 独立 worktree 安装了但合并时 package.json 冲突被丢弃 | 在 master 上重新 `npm install uuid` | uuid, dependency |
 
 | 日期 | 问题 | 原因 | 解决方案 | 关键词 |
 |------|------|------|----------|--------|
