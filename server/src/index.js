@@ -13,6 +13,9 @@ app.use('/api/v1/auth', authRoutes);
 const tagsRoutes = require('./routes/tags');
 app.use('/api/v1/tags', tagsRoutes);
 
+const dreamsRoutes = require('./routes/dreams');
+app.use('/api/v1/dreams', dreamsRoutes);
+
 app.get('/api/v1/health', (req, res) => {
   res.json({ status: 'ok' });
 });
