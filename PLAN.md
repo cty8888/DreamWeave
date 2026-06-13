@@ -3192,3 +3192,26 @@ jobs:
 - [ ] `docker run -p 3000:3000 dreamweave` 可访问
 - [ ] `AGENT_LOG.md` 记录完整
 - [ ] `PLAN.md` 所有 task 勾掉并附 commit hash
+
+---
+
+## 迭代扩展任务（T31–T42，初版 30 任务完成之后）
+
+> 这批任务在初版交付后进行，由人主导、AI 执行，沿用 TDD + 增量提交。状态均为 ✅。后端测试由 27 增至 **45**。
+
+| Task | 模块 | 内容 | 状态 |
+|------|------|------|------|
+| T31 | 账号体系 | 登录改用户名+密码，移除 email（schema/路由/前端/测试同步） | ✅ |
+| T32 | 访问控制 | 未登录只读广场：路由守卫 + 导航/详情页门禁 | ✅ |
+| T33 | LLM | 桩函数 → 真实 OpenAI 兼容调用 + 无 Key 离线降级 | ✅ |
+| T34 | AI 解梦 | `POST /dreams/:id/interpret` + 详情页展示 | ✅ |
+| T35 | 数据图谱 | `GET /stats` 聚合 + 可视化页（条形图/热力图/计数动画） | ✅ |
+| T36 | 搜索筛选 | 列表 `q/scene/emotion` 参数 + 广场筛选 UI | ✅ |
+| T37 | 社交 | 点赞 + 评论（likes/comments 表、社交路由、详情页 UI） | ✅ |
+| T38 | 关注/主页/通知 | follows + notifications 表、users 路由、铃铛角标与个人主页 | ✅ |
+| T39 | 编辑/删除/草稿 | 复用 `PUT/DELETE /dreams/:id`，新建草稿 localStorage 自动保存 | ✅ |
+| T40 | 续写风格 | `generate` 接收 `style`，详情页风格选择器 | ✅ |
+| T41 | 安全加固 | 登录限流 / CORS 白名单 / 生产 JWT / Prompt 注入防护 / 社交鉴权 / 评论限长 | ✅ |
+| T42 | UI 与数据迁移 | Oneiric Nocturne 设计系统 + 动效；scene_ids→名字 与 interpretation 列幂等迁移 | ✅ |
+
+> 说明：这批任务多为"完整垂直切片"（后端 + 前端 + 测试一体），呼应初版 `REFLECTION.md §3` 关于"task 颗粒度应为垂直切片而非前后端拆分"的结论。

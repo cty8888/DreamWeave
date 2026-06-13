@@ -334,3 +334,41 @@ GET    /api/v1/tags/emotions      (所有情感标签)
 ---
 
 > 此文档将通过 brainstorming 对话持续迭代，最终由冷启动验证确认清晰度。
+
+---
+
+## 11. 迭代扩展（v2 — 初版 30 任务之后）
+
+> 初版交付后进行了一轮功能扩展、安全加固与 UI 重构。本节记录增量设计；第 1–10 章保持不变，作为初版规约存档。完整 API 见 `README.md`。
+
+### 11.1 账号体系调整
+
+登录/注册改为 **用户名 + 密码**，移除 email（含数据库列、唯一性校验与前端表单）。
+
+### 11.2 新增功能模块
+
+| 模块 | 说明 | 关键端点 |
+|------|------|----------|
+| G. AI 解梦 | 从心理/象征层面解析梦境，存 `dreams.interpretation` | `POST /dreams/:id/interpret` |
+| H. 续写风格 | AI 续写可选基调（自然/治愈/悬疑/诗意/荒诞） | `POST /dreams/:id/generate { style }` |
+| I. 搜索与筛选 | 广场按关键词 + 场景/情感标签筛选 | `GET /dreams?q=&scene=&emotion=` |
+| J. 社交互动 | 公开梦境点赞 + 评论（仅公开可操作，私有 403） | `/dreams/:id/likes`、`/dreams/:id/comments` |
+| K. 关注/主页/通知 | 关注做梦者、个人主页、被互动时收到通知 | `/users/:username`、`/users/:username/follow`、`/notifications` |
+| L. 数据图谱 | 个人梦境聚合可视化（情感/场景/记录热力图） | `GET /stats` |
+| M. 编辑/删除/草稿 | 梦境编辑与删除、新建草稿自动保存（localStorage） | 复用 `PUT/DELETE /dreams/:id` |
+
+### 11.3 数据模型新增
+
+- `dreams` 增列：`interpretation TEXT`
+- 新表：`likes`、`comments`、`follows`、`notifications`（7 → 11 张表）
+- 历史数据迁移：`scene_ids` 由"场景 id"统一改为存"场景名"（与 `emotion_tags` 一致），启动时幂等迁移
+
+### 11.4 非功能性增强
+
+- **安全**：登录/注册限流、CORS 白名单（`CORS_ORIGIN`）、生产强制 `JWT_SECRET`、LLM Prompt 注入防护（不可信输入分隔包裹）、社交接口可见性鉴权
+- **LLM**：由桩函数补全为真实 OpenAI 兼容调用；未配置 Key 时降级为离线占位文本
+- **可观测性**：LLM 调用记录耗时与结果长度日志
+
+### 11.5 UI / 设计系统
+
+引入 **"Oneiric Nocturne"** 深色梦境设计系统（自定 CSS 变量、玻璃拟态、衬线排版）与成体系动效（极光鼠标视差、滚动揭示、卡片 3D 倾斜、数字滚动计数、流动渐变标题），均尊重 `prefers-reduced-motion`。回应初版 `REFLECTION.md §6` 指出的"界面看上去像 AI 写的"。
