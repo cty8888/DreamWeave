@@ -83,6 +83,20 @@ docker-compose up -d
 
 访问 http://localhost:3000
 
+### 公开镜像（GHCR）
+
+CI 在推送到 `master` 时会自动构建并发布镜像到 GitHub Container Registry：
+
+**`ghcr.io/cty8888/dreamweave:latest`**
+
+无需本地构建，直接拉取运行：
+
+```bash
+docker run -p 3000:3000 -e LLM_API_KEY=sk-your-key ghcr.io/cty8888/dreamweave:latest
+```
+
+> 不带 `LLM_API_KEY` 也能启动，AI 相关功能会返回离线占位文本。
+
 ---
 
 ## 运行命令
