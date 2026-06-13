@@ -70,4 +70,27 @@ router.get('/:id', authRequired, (req, res) => {
   res.json(dream);
 });
 
+router.put('/:id', authRequired, (req, res) => {
+  const dream = db.prepare('SELECT * FROM dreams WHERE id = ?').get(req.params.id);
+  if (!dream) return res.status(404).json({ error: 'dream not found' });
+  if (dream.user_id !== req.userId) return res.status(403).json({ error: 'forbidden' });
+  const { title, content, scene_ids, emotion_tags, visibility } = req.body;
+  db.prepare(`UPDATE dreams SET title=?, content=?, scene_ids=?, emotion_tags=?, visibility=?, updated_at=CURRENT_TIMESTAMP WHERE id=?`)
+    .run(title ?? dream.title, content ?? dream.content,
+      scene_ids ? JSON.stringify(scene_ids) : dream.scene_ids,
+      emotion_tags ? JSON.stringify(emotion_tags) : dream.emotion_tags,
+      visibility ?? dream.visibility, req.params.id);
+  res.json(db.prepare('SELECT * FROM dreams WHERE id = ?').get(req.params.id));
+});
+
+router.delete('/:id', authRequired, (req, res) => {
+  const dream = db.prepare('SELECT * FROM dreams WHERE id = ?').get(req.params.id);
+  if (!dream) return res.status(404).json({ error: 'dream not found' });
+  if (dream.user_id !== req.userId) return res.status(403).json({ error: 'forbidden' });
+  db.prepare('DELETE FROM continuations WHERE dream_id = ?').run(req.params.id);
+  db.prepare('DELETE FROM favorites WHERE dream_id = ?').run(req.params.id);
+  db.prepare('DELETE FROM dreams WHERE id = ?').run(req.params.id);
+  res.json({ message: 'deleted' });
+});
+
 module.exports = router;

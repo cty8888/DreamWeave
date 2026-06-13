@@ -84,3 +84,31 @@ describe('GET /api/v1/dreams/:id', () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe('PUT /api/v1/dreams/:id', () => {
+  it('should update own dream', async () => {
+    const createRes = await request(app).post('/api/v1/dreams')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ title: 'old', content: 'old content' });
+    const id = createRes.body.id;
+    const res = await request(app).put(`/api/v1/dreams/${id}`)
+      .set('Authorization', `Bearer ${token}`).send({ title: 'new title' });
+    expect(res.status).toBe(200);
+    expect(res.body.title).toBe('new title');
+  });
+});
+
+describe('DELETE /api/v1/dreams/:id', () => {
+  it('should delete own dream', async () => {
+    const createRes = await request(app).post('/api/v1/dreams')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ title: 'to delete', content: 'x' });
+    const id = createRes.body.id;
+    const res = await request(app).delete(`/api/v1/dreams/${id}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    const getRes = await request(app).get(`/api/v1/dreams/${id}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(getRes.status).toBe(404);
+  });
+});
