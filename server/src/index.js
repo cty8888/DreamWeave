@@ -7,6 +7,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const authRoutes = require('./routes/auth');
+app.use('/api/v1/auth', authRoutes);
+
 app.get('/api/v1/health', (req, res) => {
   res.json({ status: 'ok' });
 });
@@ -18,8 +21,10 @@ initSchema();
 seed();
 
 const port = config.port;
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
+}
 
 module.exports = app;
