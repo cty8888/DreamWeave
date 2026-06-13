@@ -4,7 +4,7 @@ const cors = require('cors');
 const config = require('./config');
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: config.corsOrigin }));
 app.use(express.json());
 
 const authRoutes = require('./routes/auth');
@@ -19,11 +19,23 @@ app.use('/api/v1/dreams', dreamsRoutes);
 const continuationsRoutes = require('./routes/continuations');
 app.use('/api/v1/dreams/:id/continuations', continuationsRoutes);
 
+const socialRoutes = require('./routes/social');
+app.use('/api/v1/dreams/:id', socialRoutes);
+
 const fragmentsRoutes = require('./routes/fragments');
 app.use('/api/v1/fragments', fragmentsRoutes);
 
 const favoritesRoutes = require('./routes/favorites');
 app.use('/api/v1/favorites', favoritesRoutes);
+
+const statsRoutes = require('./routes/stats');
+app.use('/api/v1/stats', statsRoutes);
+
+const usersRoutes = require('./routes/users');
+app.use('/api/v1/users', usersRoutes);
+
+const notificationsRoutes = require('./routes/notifications');
+app.use('/api/v1/notifications', notificationsRoutes);
 
 app.get('/api/v1/health', (req, res) => {
   res.json({ status: 'ok' });

@@ -13,8 +13,8 @@ beforeAll(async () => {
 
   app = require('../src/index');
 
-  await request(app).post('/api/v1/auth/register').send({ username: 'u', email: 'u@t.com', password: '123456' });
-  const r = await request(app).post('/api/v1/auth/login').send({ email: 'u@t.com', password: '123456' });
+  await request(app).post('/api/v1/auth/register').send({ username: 'u', password: '123456' });
+  const r = await request(app).post('/api/v1/auth/login').send({ username: 'u', password: '123456' });
   token = r.body.token;
 });
 

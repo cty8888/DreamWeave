@@ -12,9 +12,10 @@ beforeAll(async () => {
   const llm = require('../src/services/llm');
   llm.continueDream = () => Promise.resolve('AI续写的故事内容...');
   llm.weaveFragments = () => Promise.resolve('编织故事...');
+  llm.interpretDream = () => Promise.resolve('这个梦象征着...');
 
-  await request(app).post('/api/v1/auth/register').send({ username: 'u', email: 'u@t.com', password: '123456' });
-  const r = await request(app).post('/api/v1/auth/login').send({ email: 'u@t.com', password: '123456' });
+  await request(app).post('/api/v1/auth/register').send({ username: 'u', password: '123456' });
+  const r = await request(app).post('/api/v1/auth/login').send({ username: 'u', password: '123456' });
   token = r.body.token;
 });
 
@@ -37,13 +38,28 @@ describe('POST /api/v1/dreams/:id/generate', () => {
       .set('Authorization', `Bearer ${token}`)
       .send({ title: 'test2', content: 'secret', visibility: 'private' });
 
-    await request(app).post('/api/v1/auth/register').send({ username: 'o', email: 'o@t.com', password: '123456' });
-    const otherRes = await request(app).post('/api/v1/auth/login').send({ email: 'o@t.com', password: '123456' });
+    await request(app).post('/api/v1/auth/register').send({ username: 'o', password: '123456' });
+    const otherRes = await request(app).post('/api/v1/auth/login').send({ username: 'o', password: '123456' });
 
     const res = await request(app)
       .post(`/api/v1/dreams/${d.body.id}/generate`)
       .set('Authorization', `Bearer ${otherRes.body.token}`);
 
     expect(res.status).toBe(403);
+  });
+});
+
+describe('POST /api/v1/dreams/:id/interpret', () => {
+  it('should interpret own dream', async () => {
+    const d = await request(app).post('/api/v1/dreams')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ title: 'i', content: '我在飞', visibility: 'private' });
+
+    const res = await request(app)
+      .post(`/api/v1/dreams/${d.body.id}/interpret`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.interpretation).toBe('这个梦象征着...');
   });
 });

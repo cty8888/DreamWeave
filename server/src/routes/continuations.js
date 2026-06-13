@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db/connection');
 const { authRequired } = require('../middleware/auth');
+const { notify } = require('../services/notify');
 
 const router = express.Router({ mergeParams: true });
 
@@ -22,6 +23,9 @@ router.post('/', authRequired, (req, res) => {
   `).run(dreamId, req.userId, parent_id || null, content, is_independent ? 1 : 0);
 
   const continuation = db.prepare('SELECT * FROM continuations WHERE id = ?').get(result.lastInsertRowid);
+
+  notify({ recipientId: dream.user_id, actorId: req.userId, type: 'continue', dreamId });
+
   res.status(201).json(continuation);
 });
 

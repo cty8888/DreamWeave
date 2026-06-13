@@ -8,9 +8,9 @@ beforeAll(async () => {
   app = require('../src/index');
 
   await request(app).post('/api/v1/auth/register')
-    .send({ username: 'u', email: 'u@t.com', password: '123456' });
+    .send({ username: 'u', password: '123456' });
   const loginRes = await request(app).post('/api/v1/auth/login')
-    .send({ email: 'u@t.com', password: '123456' });
+    .send({ username: 'u', password: '123456' });
   token = loginRes.body.token;
 });
 
@@ -59,6 +59,40 @@ describe('GET /api/v1/dreams', () => {
     expect(res.body.data.length).toBeLessThanOrEqual(2);
     expect(res.body).toHaveProperty('total');
   });
+
+  it('should support keyword search', async () => {
+    await request(app).post('/api/v1/dreams')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ title: '独角兽奇遇', content: '一只会说话的独角兽', visibility: 'public' });
+
+    const res = await request(app).get('/api/v1/dreams?q=独角兽');
+    expect(res.status).toBe(200);
+    expect(res.body.data.length).toBeGreaterThanOrEqual(1);
+    expect(res.body.data.every((d) => /独角兽/.test(d.title + d.content))).toBe(true);
+  });
+
+  it('should filter by scene tag', async () => {
+    await request(app).post('/api/v1/dreams')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ title: '海底', content: '深海漫游', visibility: 'public', scene_ids: ['深海'] });
+
+    const res = await request(app).get('/api/v1/dreams?scene=深海');
+    expect(res.status).toBe(200);
+    expect(res.body.data.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('should include like_count and comment_count in list', async () => {
+    const res = await request(app).get('/api/v1/dreams?visibility=public&limit=1');
+    expect(res.body.data[0]).toHaveProperty('like_count');
+    expect(res.body.data[0]).toHaveProperty('comment_count');
+  });
+
+  it('should return a random public dream', async () => {
+    const res = await request(app).get('/api/v1/dreams/random');
+    expect(res.status).toBe(200);
+    expect(res.body.visibility).toBe('public');
+    expect(res.body).toHaveProperty('id');
+  });
 });
 
 describe('GET /api/v1/dreams/:id', () => {
@@ -78,7 +112,7 @@ describe('GET /api/v1/dreams/:id', () => {
 
   it('should return 404 for non-owner of private dream', async () => {
     const regRes = await request(app).post('/api/v1/auth/register')
-      .send({ username: 'other', email: 'other@t.com', password: '123456' });
+      .send({ username: 'other', password: '123456' });
     const res = await request(app).get(`/api/v1/dreams/${privateDreamId}`)
       .set('Authorization', `Bearer ${regRes.body.token}`);
     expect(res.status).toBe(404);

@@ -39,9 +39,9 @@ router.post('/', authRequired, (req, res) => {
   res.status(201).json(dream);
 });
 
-// GET /api/v1/dreams — 梦境列表 (T10)
+// GET /api/v1/dreams — 梦境列表 + 搜索/筛选 (T10)
 router.get('/', (req, res) => {
-  const { visibility, page = 1, limit = 20 } = req.query;
+  const { visibility, page = 1, limit = 20, q, scene, emotion } = req.query;
   const offset = (Number(page) - 1) * Number(limit);
   let where = 'WHERE 1=1';
   const params = [];
@@ -50,10 +50,26 @@ router.get('/', (req, res) => {
     where += ' AND d.visibility = ?';
     params.push(visibility);
   }
+  if (q && q.trim()) {
+    where += ' AND (d.title LIKE ? OR d.content LIKE ?)';
+    const kw = `%${q.trim()}%`;
+    params.push(kw, kw);
+  }
+  if (scene) {
+    where += ' AND d.scene_ids LIKE ?';
+    params.push(`%${scene}%`);
+  }
+  if (emotion) {
+    where += ' AND d.emotion_tags LIKE ?';
+    params.push(`%${emotion}%`);
+  }
 
   const countRow = db.prepare(`SELECT COUNT(*) as total FROM dreams d ${where}`).get(...params);
   const rows = db.prepare(`
-    SELECT d.*, u.username FROM dreams d JOIN users u ON d.user_id = u.id
+    SELECT d.*, u.username,
+      (SELECT COUNT(*) FROM likes l WHERE l.dream_id = d.id) AS like_count,
+      (SELECT COUNT(*) FROM comments c WHERE c.dream_id = d.id) AS comment_count
+    FROM dreams d JOIN users u ON d.user_id = u.id
     ${where} ORDER BY d.created_at DESC LIMIT ? OFFSET ?
   `).all(...params, Number(limit), offset);
 
@@ -70,7 +86,7 @@ router.post('/:id/generate', authRequired, async (req, res) => {
     const { continueDream } = require('../services/llm');
     const sceneIds = JSON.parse(dream.scene_ids || '[]');
     const emotions = JSON.parse(dream.emotion_tags || '[]');
-    const ai_story = await continueDream(dream.content, sceneIds, emotions);
+    const ai_story = await continueDream(dream.content, sceneIds, emotions, req.body?.style);
 
     db.prepare('UPDATE dreams SET ai_story = ?, status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
       .run(ai_story, 'completed', req.params.id);
@@ -79,6 +95,37 @@ router.post('/:id/generate', authRequired, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'AI generation failed' });
   }
+});
+
+// POST /api/v1/dreams/:id/interpret — AI 解梦
+router.post('/:id/interpret', authRequired, async (req, res) => {
+  const dream = db.prepare('SELECT * FROM dreams WHERE id = ?').get(req.params.id);
+  if (!dream) return res.status(404).json({ error: 'dream not found' });
+  if (dream.user_id !== req.userId) return res.status(403).json({ error: 'forbidden' });
+
+  try {
+    const { interpretDream } = require('../services/llm');
+    const sceneIds = JSON.parse(dream.scene_ids || '[]');
+    const emotions = JSON.parse(dream.emotion_tags || '[]');
+    const interpretation = await interpretDream(dream.content, sceneIds, emotions);
+
+    db.prepare('UPDATE dreams SET interpretation = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+      .run(interpretation, req.params.id);
+
+    res.json({ interpretation });
+  } catch (err) {
+    res.status(500).json({ error: 'AI interpretation failed' });
+  }
+});
+
+// GET /api/v1/dreams/random — 随机一个公开梦境（须在 /:id 之前注册）
+router.get('/random', (req, res) => {
+  const dream = db.prepare(`
+    SELECT d.*, u.username FROM dreams d JOIN users u ON d.user_id = u.id
+    WHERE d.visibility = 'public' ORDER BY RANDOM() LIMIT 1
+  `).get();
+  if (!dream) return res.status(404).json({ error: 'no public dreams yet' });
+  res.json(dream);
 });
 
 // GET /api/v1/dreams/:id — 梦境详情 (T11)
@@ -115,6 +162,8 @@ router.delete('/:id', authRequired, (req, res) => {
   if (dream.user_id !== req.userId) return res.status(403).json({ error: 'forbidden' });
   db.prepare('DELETE FROM continuations WHERE dream_id = ?').run(req.params.id);
   db.prepare('DELETE FROM favorites WHERE dream_id = ?').run(req.params.id);
+  db.prepare('DELETE FROM likes WHERE dream_id = ?').run(req.params.id);
+  db.prepare('DELETE FROM comments WHERE dream_id = ?').run(req.params.id);
   db.prepare('DELETE FROM dreams WHERE id = ?').run(req.params.id);
   res.json({ message: 'deleted' });
 });

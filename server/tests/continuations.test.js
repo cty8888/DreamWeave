@@ -7,12 +7,12 @@ beforeAll(async () => {
   process.env.JWT_SECRET = 'test-secret';
   app = require('../src/index');
 
-  await request(app).post('/api/v1/auth/register').send({ username: 'a', email: 'a@t.com', password: '123456' });
-  const r1 = await request(app).post('/api/v1/auth/login').send({ email: 'a@t.com', password: '123456' });
+  await request(app).post('/api/v1/auth/register').send({ username: 'a', password: '123456' });
+  const r1 = await request(app).post('/api/v1/auth/login').send({ username: 'a', password: '123456' });
   token = r1.body.token;
 
-  await request(app).post('/api/v1/auth/register').send({ username: 'b', email: 'b@t.com', password: '123456' });
-  const r2 = await request(app).post('/api/v1/auth/login').send({ email: 'b@t.com', password: '123456' });
+  await request(app).post('/api/v1/auth/register').send({ username: 'b', password: '123456' });
+  const r2 = await request(app).post('/api/v1/auth/login').send({ username: 'b', password: '123456' });
   otherToken = r2.body.token;
 
   const d = await request(app).post('/api/v1/dreams')
