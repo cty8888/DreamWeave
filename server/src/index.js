@@ -10,6 +10,9 @@ app.use(express.json());
 const authRoutes = require('./routes/auth');
 app.use('/api/v1/auth', authRoutes);
 
+const tagsRoutes = require('./routes/tags');
+app.use('/api/v1/tags', tagsRoutes);
+
 app.get('/api/v1/health', (req, res) => {
   res.json({ status: 'ok' });
 });
