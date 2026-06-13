@@ -7,8 +7,8 @@ export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('token') || '');
   const isLoggedIn = computed(() => !!token.value);
 
-  async function login(email, password) {
-    const res = await apiClient.post('/auth/login', { email, password });
+  async function login(username, password) {
+    const res = await apiClient.post('/auth/login', { username, password });
     token.value = res.data.token;
     user.value = res.data.user;
     localStorage.setItem('token', token.value);
@@ -16,8 +16,8 @@ export const useAuthStore = defineStore('auth', () => {
     return res.data;
   }
 
-  async function register(username, email, password) {
-    const res = await apiClient.post('/auth/register', { username, email, password });
+  async function register(username, password) {
+    const res = await apiClient.post('/auth/register', { username, password });
     token.value = res.data.token;
     user.value = res.data.user;
     localStorage.setItem('token', token.value);

@@ -12,8 +12,8 @@
       </div>
     </div>
     <div class="custom-tag">
-      <input v-model="customName" placeholder="自定义情感..." @keyup.enter="addCustom" />
-      <button type="button" @click="addCustom">添加</button>
+      <input v-model="customName" placeholder="自定义情感，回车添加…" @keyup.enter="addCustom" />
+      <button type="button" class="btn-ghost" @click="addCustom">添加</button>
     </div>
   </div>
 </template>
@@ -67,3 +67,71 @@ function addCustom() {
   customName.value = '';
 }
 </script>
+
+<style scoped>
+.emotion-selector label {
+  margin-bottom: 12px;
+}
+.tag-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.emotion-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 12px 5px 5px;
+  border-radius: 999px;
+  background: rgba(10, 12, 26, 0.4);
+  border: 1px solid transparent;
+  transition: border-color 0.25s var(--ease);
+}
+.emotion-row:has(.active) {
+  border-color: rgba(255, 192, 159, 0.3);
+}
+.emotion-row > button {
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 7px 15px;
+  border-radius: 999px;
+  color: var(--mist);
+  background: rgba(60, 68, 120, 0.22);
+  border: 1px solid var(--line);
+  box-shadow: none;
+  transition: all 0.25s var(--ease);
+}
+.emotion-row > button:hover:not(:disabled) {
+  color: var(--dawn);
+  border-color: rgba(255, 192, 159, 0.4);
+  background: rgba(255, 192, 159, 0.08);
+  box-shadow: none;
+}
+.emotion-row > button.active {
+  color: #2a1206;
+  background: linear-gradient(120deg, var(--dawn), var(--dawn-deep));
+  border-color: transparent;
+}
+.emotion-row input[type='range'] {
+  width: 78px;
+}
+.emotion-row > span {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--dawn);
+  min-width: 12px;
+}
+.custom-tag {
+  display: flex;
+  gap: 10px;
+}
+.custom-tag input {
+  flex: 1;
+}
+.custom-tag button {
+  flex-shrink: 0;
+  padding: 10px 20px;
+}
+</style>

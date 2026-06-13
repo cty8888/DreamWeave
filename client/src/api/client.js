@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:3000/api/v1',
+  // 相对路径：开发时由 Vite 代理（/api → localhost:3000）转发，
+  // 生产时前端由后端同源托管，直接命中。可用 VITE_API_BASE 覆盖。
+  baseURL: import.meta.env.VITE_API_BASE || '/api/v1',
   timeout: 35000,
 });
 
