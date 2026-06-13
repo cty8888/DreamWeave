@@ -2653,11 +2653,27 @@ onMounted(async () => {
 
 ---
 
+### Task T10: 获取梦境列表 API ✅ `a215e45`
+### Task T11: 获取单个梦境 API ✅ `a215e45`
 ### Task T12: 更新 & 删除梦境 API ✅ `90e1d3d`
+### Task T13: 前端梦境录入页面 ✅ `e9a46dd`
+### Task T14: 前端梦境详情页 ✅ `4b4846a`
+### Task T15: 前端梦境广场首页 ✅ `41684f0`
+### Task T16: LLM 服务模块 ✅ `052f128`
 ### Task T17: AI 续写 API ✅ `b75b7a0`
-### Task T20: 获取续写列表 API ✅ `0d345d1`
-### Task T22: 碎片串联 API ✅ `b86192a`
-### Task T25: 收藏 API ✅ `523380b`
+### Task T18: 前端续写触发 & 展示 ✅ `4b4846a`
+### Task T19: 接力续写 API ✅ `f0e33f4`
+### Task T20: 获取续写列表 API ✅ `f0e33f4`
+### Task T21: 前端接力续写页面 ✅ `9be8de1`
+### Task T22: 碎片串联 API ✅ `f0e33f4`
+### Task T23: 碎片详情 API ✅ `9be8de1`
+### Task T24: 前端碎片串联页面 ✅ `9be8de1`
+### Task T25: 收藏 API ✅ `f0e33f4`
+### Task T26: 前端收藏页面 ✅ `f39c1ca`
+### Task T27: 分享卡片页面 ✅ `f39c1ca`
+### Task T28: 导航栏 + 我的梦境页面 ✅ `f39c1ca`
+### Task T29: Docker 配置 ✅ `ec6133d`
+### Task T30: CI 配置 ✅ `ec6133d`
 
 **优先级:** P2 | **依赖:** T05, T03 | **可并行:** 无
 
