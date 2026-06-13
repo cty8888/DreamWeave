@@ -42,3 +42,4 @@ htmlcov/
 
 # Superpowers
 .claude/
+.worktrees/
