@@ -41,6 +41,9 @@ server/data/
 *.db-shm
 *.db-wal
 
+# 测试账号（含明文密码，不入库）
+ACCOUNTS.md
+
 # Coverage
 coverage/
 .coverage
