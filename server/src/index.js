@@ -11,6 +11,12 @@ app.get('/api/v1/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+const { initSchema } = require('./db/schema');
+const { seed } = require('./db/seed');
+
+initSchema();
+seed();
+
 const port = config.port;
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
