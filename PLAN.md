@@ -3213,5 +3213,7 @@ jobs:
 | T40 | 续写风格 | `generate` 接收 `style`，详情页风格选择器 | ✅ |
 | T41 | 安全加固 | 登录限流 / CORS 白名单 / 生产 JWT / Prompt 注入防护 / 社交鉴权 / 评论限长 | ✅ |
 | T42 | UI 与数据迁移 | Oneiric Nocturne 设计系统 + 动效；scene_ids→名字 与 interpretation 列幂等迁移 | ✅ |
+| T43 | 随机漫游 / 朗读 / 部署修复 | `GET /dreams/random`、浏览器 TTS 朗读、API baseURL 改相对路径 | ✅ |
+| T44 | 生态种子脚本 | 清库并生成 30 账号的完整社区示例数据（含 ACCOUNTS.md） | ✅ |
 
 > 说明：这批任务多为"完整垂直切片"（后端 + 前端 + 测试一体），呼应初版 `REFLECTION.md §3` 关于"task 颗粒度应为垂直切片而非前后端拆分"的结论。

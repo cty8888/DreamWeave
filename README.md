@@ -17,6 +17,8 @@
 - 💬 **社交互动**：公开梦境可点赞、评论
 - 🫂 **关注 & 通知**：关注其他做梦者、浏览个人主页；被接力/点赞/评论/关注时收到通知
 - 📊 **梦境图谱**：个人数据可视化（情感光谱、场景频率、记录热力图）
+- 🎲 **随机漫游**：一键跳进一个随机的公开梦境
+- 🔊 **故事朗读**：用浏览器语音合成朗读梦境原文 / AI 故事 / 解梦（零后端）
 - ❤️ **收藏 & 分享**：收藏喜欢的梦境，生成图文卡片导出 PNG
 
 > 账号体系：用户名 + 密码注册登录（不使用邮箱）。
@@ -53,6 +55,19 @@ npm install
 npm run dev          # http://localhost:5173
 ```
 
+> 提示：前端在开发时通过 Vite 代理（`/api` → `localhost:3000`）访问后端，生产环境则由后端同源托管，无需改地址。
+
+### （可选）一键填充示例数据
+
+想直接体验一个"非冷启动"的社区？运行生态种子脚本，自动生成 30 个账号及其梦境、接力、评论、点赞、关注、通知等：
+
+```bash
+cd server
+node scripts/seed-ecosystem.js
+```
+
+脚本会**清空现有数据并重建**，账号密码写入根目录 `ACCOUNTS.md`（统一密码 `dreamer2026`，该文件已被 git 忽略）。
+
 ### Docker 一键启动
 
 ```bash
@@ -75,6 +90,7 @@ docker-compose up -d
 | 命令 | 说明 |
 |------|------|
 | `cd server && npm test` | 运行后端测试（46 个） |
+| `cd server && node scripts/seed-ecosystem.js` | 清库并填充 30 账号示例生态 |
 | `cd server && npm run dev` | 启动后端开发服务器 |
 | `cd client && npm run dev` | 启动前端开发服务器 |
 | `cd client && npm run build` | 构建前端生产版本 |
@@ -112,6 +128,8 @@ docker-compose up -d
 │   │   └── services/
 │   │       ├── llm.js         # OpenAI 兼容 LLM 调用（续写/串联/解梦）
 │   │       └── notify.js      # 通知写入
+│   ├── scripts/
+│   │   └── seed-ecosystem.js  # 生态种子脚本（30 账号示例数据）
 │   └── tests/                 # Vitest 测试（11 个文件，46 个测试）
 │
 ├── client/                    # Vue 3 前端
@@ -175,6 +193,7 @@ docker-compose up -d
 | GET | `/api/v1/tags/scenes` | 否 | 场景标签 |
 | GET | `/api/v1/tags/emotions` | 否 | 情感标签 |
 | GET | `/api/v1/dreams` | 否 | 梦境列表（支持 `q`/`scene`/`emotion`/分页） |
+| GET | `/api/v1/dreams/random` | 否 | 随机一个公开梦境 |
 | POST | `/api/v1/dreams` | 是 | 创建梦境 |
 | GET | `/api/v1/dreams/:id` | 可选 | 梦境详情 |
 | PUT | `/api/v1/dreams/:id` | 是 | 更新梦境 |

@@ -356,6 +356,8 @@ GET    /api/v1/tags/emotions      (所有情感标签)
 | K. 关注/主页/通知 | 关注做梦者、个人主页、被互动时收到通知 | `/users/:username`、`/users/:username/follow`、`/notifications` |
 | L. 数据图谱 | 个人梦境聚合可视化（情感/场景/记录热力图） | `GET /stats` |
 | M. 编辑/删除/草稿 | 梦境编辑与删除、新建草稿自动保存（localStorage） | 复用 `PUT/DELETE /dreams/:id` |
+| N. 随机漫游 | 一键进入随机公开梦境 | `GET /dreams/random` |
+| O. 故事朗读 | 浏览器语音合成朗读（零后端） | 纯前端 `useSpeech` |
 
 ### 11.3 数据模型新增
 
