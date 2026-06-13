@@ -64,6 +64,27 @@
 
 ---
 
+---
+
+### 2026-06-13 — T01 实现：初始化后端项目
+
+- **触发的技能**：`subagent-driven-development`
+- **Task 编号**：T01（PLAN.md）
+- **Prompt / Context 要点**：
+  - SubAgent-T01-implementer，工作目录：`.worktrees/feature-backend-core`
+  - 7 步执行：npm init → 安装依赖 → config.js → .env.example → index.js → 验证 → 提交
+  - Commit 格式要求：`Co-Authored-By: SubAgent-T01-implementer`
+- **Subagent 输出摘要**：
+  - Commit: `52993d7`
+  - 创建文件：package.json, config.js, .env.example, index.js
+  - 依赖安装成功（express, better-sqlite3, bcrypt, jsonwebtoken, openai, vitest, supertest）
+- **人工干预**：无
+- **教训 & 可复用模板**：
+  - T01 是纯脚手架任务，无测试可写，适合直接派发
+  - subagent 在 worktree 内独立操作，不会污染主分支
+
+---
+
 ## 踩坑记录
 
 | 日期 | 问题 | 原因 | 解决方案 | 关键词 |

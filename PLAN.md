@@ -134,7 +134,7 @@ project-root/
 
 ---
 
-### Task T01: 初始化后端项目
+### Task T01: 初始化后端项目 ✅ `52993d7`
 
 **优先级:** P0 | **依赖:** 无 | **可并行:** 与 T02, T03
 
@@ -233,7 +233,7 @@ cd server && node src/index.js
 
 ---
 
-### Task T02: 初始化前端项目
+### Task T02: 初始化前端项目 ✅ `af30182`
 
 **优先级:** P0 | **依赖:** 无 | **可并行:** 与 T01, T03
 
@@ -353,7 +353,7 @@ cd client && npm run dev
 
 ---
 
-### Task T03: 初始化 SQLite 数据库
+### Task T03: 初始化 SQLite 数据库 ✅ `22b7377`
 
 **优先级:** P0 | **依赖:** T01 | **可并行:** 与 T02
 
@@ -523,7 +523,7 @@ console.log('Scene tags:', db.prepare('SELECT * FROM scene_tags').all());
 
 ---
 
-### Task T04: 用户注册 API
+### Task T04: 用户注册 API ✅ `16d0d0d`
 
 **优先级:** P0 | **依赖:** T01, T03 | **可并行:** 与 T07
 
@@ -672,7 +672,7 @@ cd server && npx vitest run tests/auth.test.js
 
 ---
 
-### Task T05: 用户登录 API + JWT 中间件
+### Task T05: 用户登录 API + JWT 中间件 ✅ `718c933`
 
 **优先级:** P0 | **依赖:** T04 | **可并行:** 无
 
@@ -937,7 +937,7 @@ cd client && npm run dev    # 终端 2
 
 ---
 
-### Task T07: 标签 API
+### Task T07: 标签 API ✅ `e274535`
 
 **优先级:** P1 | **依赖:** T01, T03 | **可并行:** 与 T04
 
@@ -1231,7 +1231,7 @@ function addCustom() {
 
 ---
 
-### Task T09: 创建梦境 API
+### Task T09: 创建梦境 API ✅ `ed77988`
 
 **优先级:** P0 | **依赖:** T05（Auth 中间件）, T03 | **可并行:** 无
 
@@ -1916,7 +1916,7 @@ onMounted(fetchDreams);
 
 ---
 
-### Task T16: LLM 服务模块
+### Task T16: LLM 服务模块 ✅ `052f128`
 
 **优先级:** P0 | **依赖:** T01 | **可并行:** 无
 
@@ -2066,7 +2066,7 @@ router.post('/:id/generate', authRequired, async (req, res) => {
 
 ---
 
-### Task T19: 接力续写 API（创建）
+### Task T19: 接力续写 API（创建） ✅ `3e61681`
 
 **优先级:** P1 | **依赖:** T05, T03 | **可并行:** 与 T22
 
@@ -2653,7 +2653,11 @@ onMounted(async () => {
 
 ---
 
-### Task T25: 收藏 API
+### Task T12: 更新 & 删除梦境 API ✅ `90e1d3d`
+### Task T17: AI 续写 API ✅ `b75b7a0`
+### Task T20: 获取续写列表 API ✅ `0d345d1`
+### Task T22: 碎片串联 API ✅ `b86192a`
+### Task T25: 收藏 API ✅ `523380b`
 
 **优先级:** P2 | **依赖:** T05, T03 | **可并行:** 无
 
