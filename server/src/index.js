@@ -29,6 +29,12 @@ app.get('/api/v1/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+// Serve frontend static files in production
+app.use(express.static('public'));
+app.get(/^\/(?!api\/)/, (req, res) => {
+  res.sendFile('index.html', { root: 'public' });
+});
+
 const { initSchema } = require('./db/schema');
 const { seed } = require('./db/seed');
 

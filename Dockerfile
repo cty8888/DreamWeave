@@ -1,18 +1,24 @@
-# TODO: 根据技术栈配置基础镜像与构建步骤
-# 示例（Python）：
-# FROM python:3.12-slim
-# WORKDIR /app
-# COPY requirements.txt .
-# RUN pip install -r requirements.txt
-# COPY . .
-# CMD ["python", "main.py"]
+# ---- 前端构建阶段 ----
+FROM node:20-alpine AS client-build
+WORKDIR /app/client
+COPY client/package*.json ./
+RUN npm ci
+COPY client/ ./
+RUN npm run build
 
-# 示例（Node.js）：
-# FROM node:20-alpine
-# WORKDIR /app
-# COPY package*.json .
-# RUN npm ci --only=production
-# COPY . .
-# CMD ["node", "index.js"]
+# ---- 后端运行阶段 ----
+FROM node:20-alpine
+WORKDIR /app
 
-# 完成后删除本注释块
+COPY server/package*.json ./
+RUN npm ci --only=production
+
+COPY server/ ./
+COPY --from=client-build /app/client/dist ./public
+RUN mkdir -p /app/data
+
+ENV PORT=3000
+ENV DB_PATH=/app/data/dreamweave.db
+
+EXPOSE 3000
+CMD ["node", "src/index.js"]
