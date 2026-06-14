@@ -7,11 +7,13 @@ COPY client/ ./
 RUN npm run build
 
 # ---- 后端运行阶段 ----
-FROM node:20-alpine
+# 用 debian-slim（glibc）：better-sqlite3 有 glibc 预编译二进制，无需现场用 node-gyp 编译
+# （alpine 是 musl，无预编译，会因缺 Python/编译工具而构建失败）
+FROM node:20-slim
 WORKDIR /app
 
 COPY server/package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 COPY server/ ./
 COPY --from=client-build /app/client/dist ./public
