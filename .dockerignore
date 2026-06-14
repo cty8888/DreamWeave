@@ -1,0 +1,22 @@
+# 关键：不要把宿主机（Windows）编译的 node_modules 拷进镜像，
+# 否则会覆盖容器内编译的 Linux 原生模块（better-sqlite3 → invalid ELF header）
+**/node_modules
+
+# 构建产物（镜像内会重新构建）
+**/dist
+client/dist
+
+# 运行时数据库
+server/data
+*.db
+*.db-shm
+*.db-wal
+
+# 版本控制 / 工具 / 环境
+.git
+.github
+.worktrees
+.claude
+.env
+**/.env.local
+ACCOUNTS.md
