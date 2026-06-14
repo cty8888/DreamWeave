@@ -7,13 +7,18 @@ COPY client/ ./
 RUN npm run build
 
 # ---- 后端运行阶段 ----
-# 用 debian-slim（glibc）：better-sqlite3 有 glibc 预编译二进制，无需现场用 node-gyp 编译
-# （alpine 是 musl，无预编译，会因缺 Python/编译工具而构建失败）
+# better-sqlite3 是原生模块；当前环境拿不到预编译二进制，需用 node-gyp 现场编译。
+# 临时装上 python3/make/g++ 编译，装完依赖后再删除，保持镜像精简。
 FROM node:20-slim
 WORKDIR /app
 
 COPY server/package*.json ./
-RUN npm ci --omit=dev
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends python3 make g++ \
+ && npm ci --omit=dev \
+ && apt-get purge -y python3 make g++ \
+ && apt-get autoremove -y \
+ && rm -rf /var/lib/apt/lists/*
 
 COPY server/ ./
 COPY --from=client-build /app/client/dist ./public
